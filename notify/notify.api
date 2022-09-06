@@ -1,0 +1,95 @@
+type (
+	WxPusherCallbackRequest {
+		Action string                      `json:"action"` // 操作
+		Data   WxPusherCallbackRequestData `json:"data"`   // 数据
+	}
+	WxPusherCallbackRequestData {
+		AppID   int64  `json:"appId"`             // 应用ID
+		AppName string `json:"appName"`           // 应用名称
+		UID     string `json:"uid"`               // 用户ID
+		Source  string `json:"source,omitempty"`  // 订阅来源
+		Time    int    `json:"time"`              // 消息时间
+		Extra   string `json:"extra,omitempty"`   // 额外数据
+		Content string `json:"content,omitempty"` // 消息内容
+	}
+
+	NotifyCreateRequest {
+		Auth
+		Notify
+	}
+
+	NotifyListRequest {
+		Auth
+		Pager
+	}
+
+	NotifyByIDRequest {
+		Auth
+		NotifyID uint `path:"notifyID"` // 消息ID
+	}
+
+	NotifyListResponse {
+		Total int64     `json:"total"` // 总数
+		Data  []*Notify `json:"data"`  // 数据
+	}
+
+	Notify {
+		ID           uint   `json:"id,optional"`           // 消息ID
+		WechatUserID string `json:"wechatUserID,optional"` // 微信用户ID
+		TopicID      int    `json:"topicID,optional"`      // 主题
+		Title        string `json:"title"`                 // 标题
+		Content      string `json:"content,optional"`      // 内容
+		Loop         bool   `json:"loop"`                  // 是否循环
+		StartAt      int    `json:"startAt"`               // 开始时间
+		EndAt        int    `json:"endAt,optional"`        // 结束时间
+		Spec         string `json:"spec,optional"`         // Cron表达式（循环有效）
+		NotifyCount  int    `json:"notifyCount,optional"`  // 通知次数
+		LastNotifyAt int    `json:"lastNotifyAt,optional"` // 最后通知时间
+	}
+
+	Auth {
+		Token string `header:"token"` // 请求Token
+	}
+
+	Pager {
+		Limit  int `form:"limit,default=10"` // 每页数量
+		Offset int `form:"offset,default=0"` // 偏移量
+	}
+)
+
+service notify-api {
+	@doc(
+		summary: wxpusher回调
+	)
+	@handler wxpusherCallback
+	post /v0/wxpusher/callback(WxPusherCallbackRequest)
+}
+
+@server(
+	middleware: Auth // 路由中间件声明
+)
+service notify-api {
+	@doc(
+		summary: 创建通知
+	)
+	@handler notifyCreate
+	post /v0/notifies(NotifyCreateRequest)
+	
+	@doc(
+		summary: 获取通知列表
+	)
+	@handler notifyList
+	get /v0/notifies(NotifyListRequest) returns (NotifyListResponse)
+	
+	@doc(
+		summary: 获取通知详情
+	)
+	@handler notifyGet
+	get /v0/notifies/:notifyID(NotifyByIDRequest) returns (Notify)
+	
+	@doc(
+		summary: 删除通知
+	)
+	@handler notifyDelete
+	delete /v0/notifies/:notifyID(NotifyByIDRequest)
+}
