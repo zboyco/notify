@@ -22,7 +22,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and push
-      run: docker/build-push-action@v3
+      uses: docker/build-push-action@v3
       with:
         push: true
-        tags: zboyco/notify:latest"
+        tags: ${{ secrets.DOCKER_REGISTRY }}/zboyco/notify:latest
