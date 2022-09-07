@@ -25,4 +25,4 @@ jobs:
       run: docker/build-push-action@v3
       with:
         push: true
-        tags: ${{ secrets.DOCKER_REGISTRY }}/zboyco/notify:latest
+        tags: zboyco/notify:latest"
