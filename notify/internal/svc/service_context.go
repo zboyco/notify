@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/zboyco/notify/notify/internal/config"
-	"github.com/zboyco/notify/notify/internal/crontab"
 	"github.com/zboyco/notify/notify/internal/middleware"
+	"github.com/zboyco/notify/notify/internal/task"
 	"github.com/zeromicro/go-zero/rest"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,8 +16,8 @@ type ServiceContext struct {
 
 	Auth rest.Middleware //  auth middleware
 
-	DB            *gorm.DB               // 数据库
-	CronJobRunner *crontab.CronJobRunner // 定时任务
+	DB            *gorm.DB            // 数据库
+	CronJobRunner *task.CronJobRunner // 定时任务
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -26,7 +26,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Config:        c,
 		Auth:          middleware.NewAuthMiddleware(c.Auth.Token).Handle,
 		DB:            db,
-		CronJobRunner: crontab.NewCronJobRunner(db),
+		CronJobRunner: task.NewCronJobRunner(db),
 	}
 }
 

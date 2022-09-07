@@ -45,17 +45,18 @@ func (l *NotifyListLogic) NotifyList(req *types.NotifyListRequest) (resp *types.
 	list := make([]*types.Notify, 0, len(notifyList))
 	for _, v := range notifyList {
 		list = append(list, &types.Notify{
-			ID:           v.ID,
-			WechatUserID: v.WechatUserID,
-			TopicID:      v.TopicID,
-			Title:        v.Title,
-			Content:      v.Content,
-			Loop:         v.Loop,
-			StartAt:      v.StartAt,
-			EndAt:        v.EndAt,
-			Spec:         v.Spec,
-			NotifyCount:  v.NotifyCount,
-			LastNotifyAt: v.LastNotifyAt,
+			ID:             v.ID,
+			Channel:        v.Channel,
+			WechatUserID:   v.WechatUserID,
+			Topic:          v.Topic,
+			Title:          v.Title,
+			Content:        v.Content,
+			MaxNotifyCount: v.MaxNotifyCount,
+			NotifyCount:    v.NotifyCount,
+			StartAt:        v.StartAt,
+			EndAt:          v.EndAt,
+			Spec:           v.Spec,
+			LastNotifyAt:   v.LastNotifyAt,
 		})
 	}
 	resp = &types.NotifyListResponse{

@@ -33,11 +33,9 @@ func (l *NotifyDeleteLogic) NotifyDelete(req *types.NotifyByIDRequest) error {
 		return err
 	}
 	// 移除定时任务
-	if notify.Loop {
-		err := l.svcCtx.CronJobRunner.RemoveJob(notify.ID)
-		if err != nil {
-			l.Logger.Error(err)
-		}
+	err := l.svcCtx.CronJobRunner.RemoveJob(notify.ID)
+	if err != nil {
+		l.Logger.Error(err)
 	}
 	// 删除数据
 	if err := notify.DeleteByID(l.svcCtx.DB); err != nil {

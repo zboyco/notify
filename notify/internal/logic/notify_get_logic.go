@@ -33,17 +33,18 @@ func (l *NotifyGetLogic) NotifyGet(req *types.NotifyByIDRequest) (resp *types.No
 		return nil, err
 	}
 	resp = &types.Notify{
-		ID:           notify.ID,
-		WechatUserID: notify.WechatUserID,
-		TopicID:      notify.TopicID,
-		Title:        notify.Title,
-		Content:      notify.Content,
-		Loop:         notify.Loop,
-		StartAt:      notify.StartAt,
-		EndAt:        notify.EndAt,
-		Spec:         notify.Spec,
-		NotifyCount:  notify.NotifyCount,
-		LastNotifyAt: notify.LastNotifyAt,
+		ID:             notify.ID,
+		Channel:        notify.Channel,
+		WechatUserID:   notify.WechatUserID,
+		Topic:          notify.Topic,
+		Title:          notify.Title,
+		Content:        notify.Content,
+		MaxNotifyCount: notify.MaxNotifyCount,
+		NotifyCount:    notify.NotifyCount,
+		StartAt:        notify.StartAt,
+		EndAt:          notify.EndAt,
+		Spec:           notify.Spec,
+		LastNotifyAt:   notify.LastNotifyAt,
 	}
 	return
 }

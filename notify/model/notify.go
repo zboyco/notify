@@ -8,16 +8,17 @@ import (
 type Notify struct {
 	BaseModel
 
-	WechatUserID string `gorm:"not null;default:''"`    // 微信用户ID
-	TopicID      int    `gorm:"not null;default:0"`     // 主题
-	Title        string `gorm:"not null;default:''"`    // 标题
-	Content      string `gorm:"not null;default:''"`    // 内容
-	Loop         bool   `gorm:"not null;default:false"` // 是否循环
-	StartAt      int    `gorm:"not null;default:0"`     // 开始时间
-	EndAt        int    `gorm:"not null;default:0"`     // 结束时间
-	Spec         string `gorm:"not null;default:''"`    // Cron表达式（循环有效）
-	NotifyCount  int    `gorm:"not null;default:0"`     // 通知次数
-	LastNotifyAt int    `gorm:"not null;default:0"`     // 最后通知时间
+	Channel        string `gorm:"not null"`            // 通知渠道
+	WechatUserID   string `gorm:"not null;default:''"` // 微信用户ID
+	Topic          string `gorm:"not null;default:''"` // 主题
+	Title          string `gorm:"not null;default:''"` // 标题
+	Content        string `gorm:"not null;default:''"` // 内容
+	MaxNotifyCount int    `gorm:"not null;default:1"`  // 最大通知次数，0为不限制
+	NotifyCount    int    `gorm:"not null;default:0"`  // 已通知次数
+	StartAt        int    `gorm:"not null;default:0"`  // 开始时间
+	EndAt          int    `gorm:"not null;default:0"`  // 结束时间
+	Spec           string `gorm:"not null;default:''"` // Cron表达式
+	LastNotifyAt   int    `gorm:"not null;default:0"`  // 最后通知时间
 }
 
 // 通过ID获取

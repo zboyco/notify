@@ -1,4 +1,4 @@
-package crontab
+package task
 
 import (
 	"context"
@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	once   sync.Once
-	runner *CronJobRunner
+	onceCronJobRunner sync.Once
+	cronJobRunner     *CronJobRunner
 )
 
+// CronJobRunner is a cron job runner.
 type CronJobRunner struct {
 	cron        *cron.Cron
 	jobEntryMap map[uint]cron.EntryID
@@ -26,21 +27,19 @@ type CronJobRunner struct {
 
 func NewCronJobRunner(db *gorm.DB) *CronJobRunner {
 	// 保证只有一个实例
-	once.Do(func() {
+	onceCronJobRunner.Do(func() {
 		// 使用秒
 		c := cron.New(cron.WithSeconds())
 		c.Start()
 
-		runner = &CronJobRunner{
+		cronJobRunner = &CronJobRunner{
 			cron:        c,
 			jobEntryMap: make(map[uint]cron.EntryID),
 		}
 		// 初始化添加定时任务
 		go func() {
 			logr := logx.WithContext(context.Background())
-			notifyModel := &model.Notify{
-				Loop: true,
-			}
+			notifyModel := &model.Notify{}
 			notifies, err := notifyModel.List(db, utils.Pager{Limit: -1})
 			if err != nil {
 				logr.Errorf("init list notifies error: %v", err)
@@ -51,9 +50,15 @@ func NewCronJobRunner(db *gorm.DB) *CronJobRunner {
 			for i := range notifies {
 				go func(notifyData *model.Notify) {
 					// 如果通知时间小于当前时间，则跳过
-					if notifyData.EndAt > currentTime {
+					if notifyData.EndAt != 0 && notifyData.EndAt > currentTime {
+						notifyJob := notify.NewNotifyJob(db, notifyData, func() {
+							logr.Infof("notify job %d done", notifyData.ID)
+							if err := cronJobRunner.RemoveJob(notifyData.ID); err != nil {
+								logr.Errorf("remove job %d error: %v", notifyData.ID, err)
+							}
+						})
 						// 添加定时任务
-						if err := runner.AddJob(notifyData.ID, notifyData.Spec, notify.NewNotifyJob(db, notifyData)); err != nil {
+						if err := cronJobRunner.AddJob(notifyData.ID, notifyData.Spec, notifyJob); err != nil {
 							logr.Errorf("init add job %v error: %v", notifyData.ID, err)
 						}
 					}
@@ -61,7 +66,7 @@ func NewCronJobRunner(db *gorm.DB) *CronJobRunner {
 			}
 		}()
 	})
-	return runner
+	return cronJobRunner
 }
 
 // 添加定时任务

@@ -1,6 +1,8 @@
 package notify
 
 import (
+	"strconv"
+
 	"github.com/wxpusher/wxpusher-sdk-go"
 	wxpusher_model "github.com/wxpusher/wxpusher-sdk-go/model"
 )
@@ -19,10 +21,14 @@ func (w *WxPusher) Channel() string {
 	return "wxpusher"
 }
 
-func (w *WxPusher) Send(topicID int, wechatUserID, title, content string) error {
+func (w *WxPusher) Send(topic, wechatUserID, title, content string) error {
 	msg := wxpusher_model.NewMessage(w.appToken)
 	msg = msg.SetSummary(title).SetContent(content)
-	if topicID != 0 {
+	if topic != "" {
+		topicID, err := strconv.Atoi(topic)
+		if err != nil {
+			return err
+		}
 		msg = msg.AddTopicId(topicID)
 	} else if wechatUserID != "" {
 		msg = msg.AddUId(wechatUserID)
