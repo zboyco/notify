@@ -63,15 +63,20 @@ func (n *NotifyJob) Run() {
 			NotifyAt: currentTime,
 		}
 		// 发送通知
-		err := sender.Send(n.data.Topic, n.data.WechatUserID, n.data.Title, n.data.Content)
-		if err != nil {
-			notifyLog.Log = err.Error()
+		sendErr := sender.Send(n.data.Topic, n.data.WechatUserID, n.data.Title, n.data.Content)
+		if sendErr != nil {
+			notifyLog.Log = sendErr.Error()
 			notifyLog.Status = 2
+			logr.Errorf("send(%s) notify error: %s", sender.Channel(), sendErr.Error())
 		}
 		// 创建通知日志
-		err = notifyLog.Create(tx)
+		err := notifyLog.Create(tx)
 		if err != nil {
 			return err
+		}
+		// 发送失败，不更新通知次数
+		if sendErr != nil {
+			return nil
 		}
 		// update notify count
 		n.data.NotifyCount++
