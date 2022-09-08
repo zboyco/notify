@@ -49,6 +49,7 @@ type Notify struct {
 	EndAt          int    `json:"endAt,optional"`                      // 结束时间
 	Spec           string `json:"spec,optional"`                       // Cron表达式（循环有效）
 	LastNotifyAt   int    `json:"lastNotifyAt,optional"`               // 最后通知时间
+	Completed      bool   `json:"completed,optional,default=false"`    // 完成标识
 }
 
 type Auth struct {

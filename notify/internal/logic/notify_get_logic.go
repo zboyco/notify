@@ -45,6 +45,7 @@ func (l *NotifyGetLogic) NotifyGet(req *types.NotifyByIDRequest) (resp *types.No
 		EndAt:          notify.EndAt,
 		Spec:           notify.Spec,
 		LastNotifyAt:   notify.LastNotifyAt,
+		Completed:      notify.Completed,
 	}
 	return
 }

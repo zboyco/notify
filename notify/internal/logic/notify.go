@@ -6,7 +6,6 @@ import (
 
 	"github.com/zboyco/notify/notify/internal/notify"
 	"github.com/zboyco/notify/notify/internal/svc"
-	"github.com/zboyco/notify/notify/internal/task"
 	"github.com/zboyco/notify/notify/model"
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
@@ -21,15 +20,19 @@ func AddNotifyToCron(ctx context.Context, svcCtx *svc.ServiceContext, notifyData
 		// 如果已通知次数已达最大通知次数，则跳过
 		if notifyData.MaxNotifyCount != 0 && notifyData.NotifyCount >= notifyData.MaxNotifyCount {
 			logr.Infof("notify %d max notify count reached", notifyData.ID)
+			// 标识完成任务
+			completeJobFunc(ctx, svcCtx)(notifyData)
 			return
 		}
 		// 如果通知时间小于当前时间，则跳过
 		if notifyData.EndAt != 0 && notifyData.EndAt < currentTime {
 			logr.Info("notify end time less than current time")
+			// 标识完成任务
+			completeJobFunc(ctx, svcCtx)(notifyData)
 			return
 		}
 		// 创建job
-		notifyJob := notify.NewNotifyJob(notifyData, deleteJobFunc(ctx, svcCtx.CronJobRunner), updateNotifyAndLog(svcCtx.DB))
+		notifyJob := notify.NewNotifyJob(notifyData, completeJobFunc(ctx, svcCtx), updateNotifyAndLog(svcCtx.DB))
 		// 添加定时任务
 		if err := svcCtx.CronJobRunner.AddJob(notifyData.ID, notifyData.Spec, notifyJob); err != nil {
 			logr.Errorf("init add job %v error: %v", notifyData.ID, err)
@@ -37,12 +40,18 @@ func AddNotifyToCron(ctx context.Context, svcCtx *svc.ServiceContext, notifyData
 	}()
 }
 
-// 删除cron中的notify
-func deleteJobFunc(ctx context.Context, runner *task.CronJobRunner) func(*model.Notify) {
+// 完成任务回调函数
+func completeJobFunc(ctx context.Context, svcCtx *svc.ServiceContext) func(*model.Notify) {
 	logr := logx.WithContext(ctx)
 	return func(notifyData *model.Notify) {
 		logr.Infof("notify job %d done", notifyData.ID)
-		if err := runner.RemoveJob(notifyData.ID); err != nil {
+		// 标识任务已完成
+		notifyData.Completed = true
+		if err := notifyData.Update(svcCtx.DB); err != nil {
+			logr.Errorf("update notify %d completed error: %v", notifyData.ID, err)
+		}
+		// 删除cron中的notify
+		if err := svcCtx.CronJobRunner.RemoveJob(notifyData.ID); err != nil {
 			logr.Errorf("remove job %d error: %v", notifyData.ID, err)
 		}
 	}

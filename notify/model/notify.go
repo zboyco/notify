@@ -8,17 +8,18 @@ import (
 type Notify struct {
 	BaseModel
 
-	Channel        string `gorm:"not null"`                  // 通知渠道
-	WechatUserID   string `gorm:"not null;index;default:''"` // 微信用户ID
-	Topic          string `gorm:"not null;index;default:''"` // 主题
-	Title          string `gorm:"not null;default:''"`       // 标题
-	Content        string `gorm:"not null;default:''"`       // 内容
-	MaxNotifyCount int    `gorm:"not null;default:1"`        // 最大通知次数，0为不限制
-	NotifyCount    int    `gorm:"not null;default:0"`        // 已通知次数
-	StartAt        int    `gorm:"not null;default:0"`        // 开始时间
-	EndAt          int    `gorm:"not null;default:0"`        // 结束时间
-	Spec           string `gorm:"not null;default:''"`       // Cron表达式
-	LastNotifyAt   int    `gorm:"not null;default:0"`        // 最后通知时间
+	Channel        string `gorm:"not null"`                     // 通知渠道
+	WechatUserID   string `gorm:"not null;index;default:''"`    // 微信用户ID
+	Topic          string `gorm:"not null;index;default:''"`    // 主题
+	Title          string `gorm:"not null;default:''"`          // 标题
+	Content        string `gorm:"not null;default:''"`          // 内容
+	MaxNotifyCount int    `gorm:"not null;default:1"`           // 最大通知次数，0为不限制
+	NotifyCount    int    `gorm:"not null;default:0"`           // 已通知次数
+	StartAt        int    `gorm:"not null;default:0"`           // 开始时间
+	EndAt          int    `gorm:"not null;default:0"`           // 结束时间
+	Spec           string `gorm:"not null;default:''"`          // Cron表达式
+	LastNotifyAt   int    `gorm:"not null;default:0"`           // 最后通知时间
+	Completed      bool   `gorm:"not null;index;default:false"` // 完成标识
 }
 
 // 通过ID获取
@@ -37,9 +38,19 @@ func (t *Notify) Count(db *gorm.DB) (int64, error) {
 }
 
 // 列表
-func (t *Notify) List(db *gorm.DB, pager utils.Pager) ([]Notify, error) {
+func (t *Notify) List(db *gorm.DB, pager utils.Pager, zeroFields ...interface{}) ([]Notify, error) {
 	var notifies []Notify
-	err := db.Where(t).Limit(pager.Limit).Offset(pager.Offset).Find(&notifies).Error
+	err := db.Where(t, zeroFields...).Limit(pager.Limit).Offset(pager.Offset).Find(&notifies).Error
+	if err != nil {
+		return nil, err
+	}
+	return notifies, nil
+}
+
+// 列表(自定义条件)
+func (t *Notify) ListByQuery(db *gorm.DB, pager utils.Pager, where interface{}, args ...interface{}) ([]Notify, error) {
+	var notifies []Notify
+	err := db.Where(where, args...).Limit(pager.Limit).Offset(pager.Offset).Find(&notifies).Error
 	if err != nil {
 		return nil, err
 	}

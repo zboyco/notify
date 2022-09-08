@@ -52,6 +52,7 @@ func (l *NotifyCreateLogic) NotifyCreate(req *types.NotifyCreateRequest) error {
 		EndAt:          req.EndAt,
 		Spec:           req.Spec,
 		LastNotifyAt:   req.LastNotifyAt,
+		Completed:      false,
 	}
 	// 创建
 	if err := notifyData.Create(l.svcCtx.DB); err != nil {

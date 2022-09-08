@@ -57,6 +57,7 @@ func (l *NotifyListLogic) NotifyList(req *types.NotifyListRequest) (resp *types.
 			EndAt:          v.EndAt,
 			Spec:           v.Spec,
 			LastNotifyAt:   v.LastNotifyAt,
+			Completed:      v.Completed,
 		})
 	}
 	resp = &types.NotifyListResponse{

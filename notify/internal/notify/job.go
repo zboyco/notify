@@ -16,16 +16,16 @@ var _ cron.Job = (*NotifyJob)(nil)
 var uniqueJob = sync.Map{}
 
 type NotifyJob struct {
-	data      *model.Notify                    // 数据
-	deleteJob func(*model.Notify)              // 删除Job
-	done      func(*model.Notify, error) error // 回调函数
+	data        *model.Notify                    // 数据
+	completeJob func(*model.Notify)              // 完成Job
+	done        func(*model.Notify, error) error // 回调函数
 }
 
-func NewNotifyJob(data *model.Notify, deleteJobFunc func(*model.Notify), doneFunc func(*model.Notify, error) error) *NotifyJob {
+func NewNotifyJob(data *model.Notify, completeJobFunc func(*model.Notify), doneFunc func(*model.Notify, error) error) *NotifyJob {
 	return &NotifyJob{
-		data:      data,
-		done:      doneFunc,
-		deleteJob: deleteJobFunc,
+		data:        data,
+		done:        doneFunc,
+		completeJob: completeJobFunc,
 	}
 }
 
@@ -52,15 +52,15 @@ func (n *NotifyJob) Run() {
 	// 判断是否过期
 	if n.data.EndAt != 0 && n.data.EndAt < currentTime {
 		logr.Infof("NotifyJob: %d is expired", n.data.ID)
-		// 删除Job
-		n.Delete()
+		// 完成Job
+		n.Complete()
 		return
 	}
 	// 判断是否已经发送完成
 	if n.data.MaxNotifyCount != 0 && n.data.NotifyCount >= n.data.MaxNotifyCount {
 		logr.Infof("NotifyJob: [%d] has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
-		// 删除Job
-		n.Delete()
+		// 完成Job
+		n.Complete()
 		return
 	}
 
@@ -91,12 +91,12 @@ func (n *NotifyJob) Run() {
 	// 判断是否已经发送完成
 	if n.data.MaxNotifyCount != 0 && n.data.NotifyCount >= n.data.MaxNotifyCount {
 		logr.Infof("NotifyJob: [%d] has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
-		// 删除Job
-		n.Delete()
+		// 完成Job
+		n.Complete()
 		return
 	}
 }
 
-func (n *NotifyJob) Delete() {
-	n.deleteJob(n.data)
+func (n *NotifyJob) Complete() {
+	n.completeJob(n.data)
 }
