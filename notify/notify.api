@@ -71,6 +71,12 @@ service notify-api {
 )
 service notify-api {
 	@doc(
+		summary: 重置定时任务
+	)
+	@handler resetCron
+	post /v0/cron/reset(Auth)
+	
+	@doc(
 		summary: 创建通知
 	)
 	@handler notifyCreate

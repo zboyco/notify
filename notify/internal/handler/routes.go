@@ -26,6 +26,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Route{
 				{
 					Method:  http.MethodPost,
+					Path:    "/v0/cron/reset",
+					Handler: resetCronHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
 					Path:    "/v0/notifies",
 					Handler: notifyCreateHandler(serverCtx),
 				},

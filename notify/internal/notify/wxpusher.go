@@ -7,6 +7,8 @@ import (
 	wxpusher_model "github.com/wxpusher/wxpusher-sdk-go/model"
 )
 
+var _ Sender = (*WxPusher)(nil)
+
 type WxPusher struct {
 	appToken string
 }

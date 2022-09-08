@@ -2,33 +2,48 @@ package notify
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/robfig/cron/v3"
+	"github.com/zboyco/notify/notify/internal/types"
 	"github.com/zboyco/notify/notify/model"
 	"github.com/zeromicro/go-zero/core/logx"
-	"gorm.io/gorm"
 )
 
+var _ cron.Job = (*NotifyJob)(nil)
+var uniqueJob = sync.Map{}
+
 type NotifyJob struct {
-	db        *gorm.DB
-	data      *model.Notify
-	deleteJob func()
+	data      *model.Notify                    // 数据
+	deleteJob func(*model.Notify)              // 删除Job
+	done      func(*model.Notify, error) error // 回调函数
 }
 
-func NewNotifyJob(db *gorm.DB, data *model.Notify, deleteJobFunc func()) *NotifyJob {
+func NewNotifyJob(data *model.Notify, deleteJobFunc func(*model.Notify), doneFunc func(*model.Notify, error) error) *NotifyJob {
 	return &NotifyJob{
-		db:        db,
 		data:      data,
+		done:      doneFunc,
 		deleteJob: deleteJobFunc,
 	}
 }
 
 func (n *NotifyJob) Run() {
-	ctx := context.Background()
-	logr := logx.WithContext(ctx)
-	currentTime := int(time.Now().Unix())
+	// 判断是否执行中
+	if _, ok := uniqueJob.Load(n.data.ID); ok {
+		return
+	}
+	// 加入执行中
+	uniqueJob.Store(n.data.ID, true)
+	// 移除执行中
+	defer uniqueJob.Delete(n.data.ID)
+	var (
+		err         error
+		ctx         = context.Background()
+		logr        = logx.WithContext(ctx)
+		currentTime = int(time.Now().Unix())
+	)
 	// 判断是否开始
 	if n.data.StartAt != 0 && n.data.StartAt > currentTime {
 		logr.Infof("NotifyJob: %d not start", n.data.ID)
@@ -37,68 +52,51 @@ func (n *NotifyJob) Run() {
 	// 判断是否过期
 	if n.data.EndAt != 0 && n.data.EndAt < currentTime {
 		logr.Infof("NotifyJob: %d is expired", n.data.ID)
-		n.deleteJob()
+		// 删除Job
+		n.Delete()
 		return
 	}
 	// 判断是否已经发送完成
 	if n.data.MaxNotifyCount != 0 && n.data.NotifyCount >= n.data.MaxNotifyCount {
-		logr.Infof("NotifyJob: %d has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
-		n.deleteJob()
+		logr.Infof("NotifyJob: [%d] has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
+		// 删除Job
+		n.Delete()
 		return
 	}
 
-	logr.Info("run job notify id ", n.data.ID, " notify count ", n.data.NotifyCount)
-	// 采用事务创建日志、更新通知次数、更新最后通知时间
-	err := n.db.Transaction(func(tx *gorm.DB) error {
-		// 获取消息发送器
-		sender := GetSender(n.data.Channel)
-		if sender == nil {
-			return errors.New(fmt.Sprintf("sender %s not found", n.data.Channel))
-		}
-		// create notify log
-		notifyLog := &model.NotifyLog{
-			NotifyID: n.data.ID,
-			Channel:  sender.Channel(),
-			Status:   1,
-			NotifyAt: currentTime,
-		}
-		// 发送通知
-		sendErr := sender.Send(n.data.Topic, n.data.WechatUserID, n.data.Title, n.data.Content)
-		if sendErr != nil {
-			notifyLog.Log = sendErr.Error()
-			notifyLog.Status = 2
-			logr.Errorf("send(%s) notify error: %s", sender.Channel(), sendErr.Error())
-		}
-		// 创建通知日志
-		err := notifyLog.Create(tx)
-		if err != nil {
-			return err
-		}
-		// 发送失败，不更新通知次数
-		if sendErr != nil {
-			return nil
-		}
-		// update notify count
-		n.data.NotifyCount++
-		// update notify last notify at
-		n.data.LastNotifyAt = currentTime
-		if err := n.data.Update(tx); err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		logr.Error(err)
+	logr.Infof("NotifyJob: [%d] start, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
+
+	// 获取消息发送器
+	sender := GetSender(n.data.Channel)
+	if sender == nil {
+		// 通道不存在
+		logr.Errorf("NotifyJob: [%d] channel [%s] not found", n.data.ID, n.data.Channel)
+		_ = n.done(n.data, errors.WithMessagef(types.ErrSenderNotFount, "channel: %s", n.data.Channel))
 		return
 	}
+
+	// 执行发送
+	err = sender.Send(n.data.Topic, n.data.WechatUserID, n.data.Title, n.data.Content)
+	if err != nil {
+		// 发送失败
+		logr.Errorf("NotifyJob: [%d] send failed, err: [%s]", n.data.ID, err.Error())
+		_ = n.done(n.data, errors.WithMessage(types.ErrSendFailed, err.Error()))
+		return
+	}
+	// 发送成功
+	n.data.NotifyCount++
+	n.data.LastNotifyAt = currentTime
+	_ = n.done(n.data, err)
+
 	// 判断是否已经发送完成
 	if n.data.MaxNotifyCount != 0 && n.data.NotifyCount >= n.data.MaxNotifyCount {
-		logr.Infof("NotifyJob: %d has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
-		n.deleteJob()
+		logr.Infof("NotifyJob: [%d] has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
+		// 删除Job
+		n.Delete()
 		return
 	}
 }
 
 func (n *NotifyJob) Delete() {
-	n.deleteJob()
+	n.deleteJob(n.data)
 }

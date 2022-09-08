@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"strings"
 
 	"github.com/zboyco/notify/notify/internal/config"
 	"github.com/zboyco/notify/notify/internal/handler"
+	"github.com/zboyco/notify/notify/internal/logic"
 	"github.com/zboyco/notify/notify/internal/notify"
 	"github.com/zboyco/notify/notify/internal/svc"
 	"github.com/zboyco/notify/notify/model"
@@ -42,6 +44,9 @@ func main() {
 
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)
+
+	// 加载定时任务
+	_ = logic.NewResetCronLogic(context.Background(), ctx).ResetCron(nil)
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
 	server.Start()
