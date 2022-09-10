@@ -31,6 +31,31 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodPost,
+					Path:    "/v0/channels",
+					Handler: channelCreateHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/v0/channels",
+					Handler: channelListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/v0/channels/:channelName",
+					Handler: channelGetHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPut,
+					Path:    "/v0/channels/:channelName",
+					Handler: channelUpdateHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodDelete,
+					Path:    "/v0/channels/:channelName",
+					Handler: channelDeleteHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
 					Path:    "/v0/notifies",
 					Handler: notifyCreateHandler(serverCtx),
 				},

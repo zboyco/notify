@@ -33,10 +33,12 @@ func (l *NotifyGetLogic) NotifyGet(req *types.NotifyByIDRequest) (resp *types.No
 		return nil, err
 	}
 	resp = &types.Notify{
-		ID:             notify.ID,
-		Channel:        notify.Channel,
-		WechatUserID:   notify.WechatUserID,
-		Topic:          notify.Topic,
+		BaseModel: types.BaseModel{
+			ID:        notify.ID,
+			CreatedAt: notify.CreatedAt,
+			UpdatedAt: notify.UpdatedAt,
+		},
+		ChannelID:      notify.ChannelID,
 		Title:          notify.Title,
 		Content:        notify.Content,
 		MaxNotifyCount: notify.MaxNotifyCount,

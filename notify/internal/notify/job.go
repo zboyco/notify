@@ -17,13 +17,16 @@ var uniqueJob = sync.Map{}
 
 type NotifyJob struct {
 	data        *model.Notify                    // 数据
+	channel     *model.Channel                   // 渠道
 	completeJob func(*model.Notify)              // 完成Job
 	done        func(*model.Notify, error) error // 回调函数
 }
 
-func NewNotifyJob(data *model.Notify, completeJobFunc func(*model.Notify), doneFunc func(*model.Notify, error) error) *NotifyJob {
+// NewNotifyJob 创建Job
+func NewNotifyJob(data *model.Notify, channel *model.Channel, completeJobFunc func(*model.Notify), doneFunc func(*model.Notify, error) error) *NotifyJob {
 	return &NotifyJob{
 		data:        data,
+		channel:     channel,
 		done:        doneFunc,
 		completeJob: completeJobFunc,
 	}
@@ -67,16 +70,16 @@ func (n *NotifyJob) Run() {
 	logr.Infof("NotifyJob: [%d] start, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
 
 	// 获取消息发送器
-	sender := GetSender(n.data.Channel)
+	sender := GetSender(n.channel.Sender)
 	if sender == nil {
 		// 通道不存在
-		logr.Errorf("NotifyJob: [%d] channel [%s] not found", n.data.ID, n.data.Channel)
-		_ = n.done(n.data, errors.WithMessagef(types.ErrSenderNotFount, "channel: %s", n.data.Channel))
+		logr.Errorf("NotifyJob: [%d] sender [%s] not found", n.data.ID, n.channel.Sender)
+		_ = n.done(n.data, errors.WithMessagef(types.ErrSenderNotFount, "sender: %s", n.channel.Sender))
 		return
 	}
 
 	// 执行发送
-	err = sender.Send(n.data.Topic, n.data.WechatUserID, n.data.Title, n.data.Content)
+	err = sender.Send(n.channel.Topic, n.channel.WechatUserID, n.data.Title, n.data.Content)
 	if err != nil {
 		// 发送失败
 		logr.Errorf("NotifyJob: [%d] send failed, err: [%s]", n.data.ID, err.Error())

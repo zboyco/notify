@@ -28,10 +28,7 @@ func NewNotifyCreateLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Noti
 
 func (l *NotifyCreateLogic) NotifyCreate(req *types.NotifyCreateRequest) error {
 	// todo: add your logic here and delete this line
-	// 检查接收者
-	if req.WechatUserID == "" && req.Topic == "" {
-		return errors.WithMessage(types.ErrNotifyCreateFailed, "接收者不能为空")
-	}
+
 	// 判断结束时间是否大于当前时间
 	if req.EndAt != 0 && req.EndAt < int(time.Now().Unix()) {
 		return errors.WithMessage(types.ErrNotifyCreateFailed, "结束时间不能小于当前时间")
@@ -40,10 +37,16 @@ func (l *NotifyCreateLogic) NotifyCreate(req *types.NotifyCreateRequest) error {
 	if req.EndAt != 0 && req.EndAt < req.StartAt {
 		return errors.WithMessage(types.ErrNotifyCreateFailed, "结束时间不能小于开始时间")
 	}
+
+	// 查询channel是否存在
+	channel := &model.Channel{}
+	channel.Name = req.ChannelName
+	if err := channel.FetchByName(l.svcCtx.DB); err != nil {
+		return errors.WithMessage(types.ErrNotifyCreateFailed, err.Error())
+	}
+
 	notifyData := &model.Notify{
-		Channel:        req.Channel,
-		WechatUserID:   req.WechatUserID,
-		Topic:          req.Topic,
+		ChannelID:      channel.ID,
 		Title:          req.Title,
 		Content:        req.Content,
 		MaxNotifyCount: req.MaxNotifyCount,

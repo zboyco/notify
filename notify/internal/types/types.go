@@ -16,9 +16,47 @@ type WxPusherCallbackRequestData struct {
 	Content string `json:"content,omitempty"` // 消息内容
 }
 
+type ChannelCreateRequest struct {
+	Auth
+	Channel
+}
+
+type ChannelListRequest struct {
+	Auth
+	Pager
+}
+
+type ChannelByNameRequest struct {
+	Auth
+	ChannelName string `path:"channelName"` // 渠道名称
+}
+
+type ChannelUpdateRequest struct {
+	Auth
+	Channel
+	ChannelName string `path:"channelName"` // 渠道名称
+}
+
+type ChannelListResponse struct {
+	Total int64      `json:"total"` // 总数
+	Data  []*Channel `json:"data"`  // 数据
+}
+
+type Channel struct {
+	BaseModel
+	Name         string `json:"name"`                          // 渠道名称
+	Sender       string `json:"sender,options=wxpusher|xizhi"` // 发送者
+	WechatUserID string `json:"wechatUserID,optional"`         // 微信用户ID
+	Topic        string `json:"topic,optional"`                // 主题
+	SubscribeURL string `json:"subscribeUrl,optional"`         // 订阅地址
+	SubscribeQr  string `json:"subscribeQr,optional"`          // 订阅二维码
+	Remark       string `json:"remark,optional"`               // 备注
+}
+
 type NotifyCreateRequest struct {
 	Auth
 	Notify
+	ChannelName string `json:"channelName"` // 渠道名称
 }
 
 type NotifyListRequest struct {
@@ -37,10 +75,8 @@ type NotifyListResponse struct {
 }
 
 type Notify struct {
-	ID             uint   `json:"id,optional"`                         // 消息ID
-	Channel        string `json:"channel,options=wxpusher|xizhi"`      // 消息渠道
-	WechatUserID   string `json:"wechatUserID,optional"`               // 微信用户ID
-	Topic          string `json:"topic,optional"`                      // 主题
+	BaseModel
+	ChannelID      uint   `json:"channelID,optional"`                  // 渠道ID
 	Title          string `json:"title"`                               // 标题
 	Content        string `json:"content,optional"`                    // 内容
 	MaxNotifyCount int    `json:"maxNotifyCount,range=[0:],default=1"` // 最大通知次数，0为不限制
@@ -50,6 +86,12 @@ type Notify struct {
 	Spec           string `json:"spec,optional"`                       // Cron表达式（循环有效）
 	LastNotifyAt   int    `json:"lastNotifyAt,optional"`               // 最后通知时间
 	Completed      bool   `json:"completed,optional,default=false"`    // 完成标识
+}
+
+type BaseModel struct {
+	ID        uint `json:"id,optional"`        // ID
+	CreatedAt int  `json:"createdAt,optional"` // 创建时间
+	UpdatedAt int  `json:"updatedAt,optional"` // 更新时间
 }
 
 type Auth struct {

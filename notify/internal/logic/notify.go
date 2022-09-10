@@ -31,8 +31,15 @@ func AddNotifyToCron(ctx context.Context, svcCtx *svc.ServiceContext, notifyData
 			completeJobFunc(ctx, svcCtx)(notifyData)
 			return
 		}
+		// 查询通知渠道
+		channel := &model.Channel{}
+		channel.ID = notifyData.ChannelID
+		if err := channel.FetchByID(svcCtx.DB); err != nil {
+			logr.Errorf("fetch channel %d error: %v", notifyData.ChannelID, err)
+			return
+		}
 		// 创建job
-		notifyJob := notify.NewNotifyJob(notifyData, completeJobFunc(ctx, svcCtx), updateNotifyAndLog(svcCtx.DB))
+		notifyJob := notify.NewNotifyJob(notifyData, channel, completeJobFunc(ctx, svcCtx), updateNotifyAndLog(svcCtx.DB))
 		// 添加定时任务
 		if err := svcCtx.CronJobRunner.AddJob(notifyData.ID, notifyData.Spec, notifyJob); err != nil {
 			logr.Errorf("init add job %v error: %v", notifyData.ID, err)
@@ -65,10 +72,10 @@ func updateNotifyAndLog(db *gorm.DB) func(*model.Notify, error) error {
 		return db.Transaction(func(tx *gorm.DB) error {
 			// create notify log
 			notifyLog := &model.NotifyLog{
-				NotifyID: notifyData.ID,
-				Channel:  notifyData.Channel,
-				Status:   1,
-				NotifyAt: currentTime,
+				NotifyID:  notifyData.ID,
+				ChannelID: notifyData.ChannelID,
+				Status:    1,
+				NotifyAt:  currentTime,
 			}
 
 			if err != nil {

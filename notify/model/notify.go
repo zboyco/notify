@@ -8,9 +8,7 @@ import (
 type Notify struct {
 	BaseModel
 
-	Channel        string `gorm:"not null"`                     // 通知渠道
-	WechatUserID   string `gorm:"not null;index;default:''"`    // 微信用户ID
-	Topic          string `gorm:"not null;index;default:''"`    // 主题
+	ChannelID      uint   `gorm:"not null;index"`               // 通知渠道
 	Title          string `gorm:"not null;default:''"`          // 标题
 	Content        string `gorm:"not null;default:''"`          // 内容
 	MaxNotifyCount int    `gorm:"not null;default:1"`           // 最大通知次数，0为不限制

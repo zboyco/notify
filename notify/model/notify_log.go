@@ -8,11 +8,11 @@ import (
 type NotifyLog struct {
 	BaseModel
 
-	NotifyID uint   `gorm:"not null;index"`            // 通知ID
-	Channel  string `gorm:"not null;index;default:''"` // 通道
-	Log      string `gorm:"not null;default:''"`       // 日志
-	Status   int    `gorm:"not null;index;default:0"`  // 通知状态
-	NotifyAt int    `gorm:"not null;default:0"`        // 通知时间
+	NotifyID  uint   `gorm:"not null;index"`           // 通知ID
+	ChannelID uint   `gorm:"not null;index;default:0"` // 渠道ID
+	Log       string `gorm:"not null;default:''"`      // 日志
+	Status    int    `gorm:"not null;index;default:0"` // 通知状态
+	NotifyAt  int    `gorm:"not null;default:0"`       // 通知时间
 }
 
 // 通过ID获取

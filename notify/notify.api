@@ -13,9 +13,47 @@ type (
 		Content string `json:"content,omitempty"` // 消息内容
 	}
 
+	ChannelCreateRequest {
+		Auth
+		Channel
+	}
+
+	ChannelListRequest {
+		Auth
+		Pager
+	}
+
+	ChannelByNameRequest {
+		Auth
+		ChannelName string `path:"channelName"` // 渠道名称
+	}
+
+	ChannelUpdateRequest {
+		Auth
+		Channel
+		ChannelName string `path:"channelName"` // 渠道名称
+	}
+
+	ChannelListResponse {
+		Total int64      `json:"total"` // 总数
+		Data  []*Channel `json:"data"`  // 数据
+	}
+
+	Channel {
+		BaseModel
+		Name         string `json:"name"`                          // 渠道名称
+		Sender       string `json:"sender,options=wxpusher|xizhi"` // 发送者
+		WechatUserID string `json:"wechatUserID,optional"`         // 微信用户ID
+		Topic        string `json:"topic,optional"`                // 主题
+		SubscribeURL string `json:"subscribeUrl,optional"`         // 订阅地址
+		SubscribeQr  string `json:"subscribeQr,optional"`          // 订阅二维码
+		Remark       string `json:"remark,optional"`               // 备注
+	}
+
 	NotifyCreateRequest {
 		Auth
 		Notify
+		ChannelName string `json:"channelName"` // 渠道名称
 	}
 
 	NotifyListRequest {
@@ -34,10 +72,8 @@ type (
 	}
 
 	Notify {
-		ID             uint   `json:"id,optional"`                         // 消息ID
-		Channel        string `json:"channel,options=wxpusher|xizhi"`      // 消息渠道
-		WechatUserID   string `json:"wechatUserID,optional"`               // 微信用户ID
-		Topic          string `json:"topic,optional"`                      // 主题
+		BaseModel
+		ChannelID      uint   `json:"channelID,optional"`                  // 渠道ID
 		Title          string `json:"title"`                               // 标题
 		Content        string `json:"content,optional"`                    // 内容
 		MaxNotifyCount int    `json:"maxNotifyCount,range=[0:],default=1"` // 最大通知次数，0为不限制
@@ -47,6 +83,12 @@ type (
 		Spec           string `json:"spec,optional"`                       // Cron表达式（循环有效）
 		LastNotifyAt   int    `json:"lastNotifyAt,optional"`               // 最后通知时间
 		Completed      bool   `json:"completed,optional,default=false"`    // 完成标识
+	}
+
+	BaseModel {
+		ID        uint `json:"id,optional"`        // ID
+		CreatedAt int  `json:"createdAt,optional"` // 创建时间
+		UpdatedAt int  `json:"updatedAt,optional"` // 更新时间
 	}
 
 	Auth {
@@ -76,6 +118,36 @@ service notify-api {
 	)
 	@handler resetCron
 	post /v0/cron/reset(Auth)
+	
+	@doc(
+		summary: 创建渠道
+	)
+	@handler channelCreate
+	post /v0/channels(ChannelCreateRequest)
+	
+	@doc(
+		summary: 获取渠道列表
+	)
+	@handler channelList
+	get /v0/channels(ChannelListRequest) returns (ChannelListResponse)
+	
+	@doc(
+		summary: 获取渠道详情
+	)
+	@handler channelGet
+	get /v0/channels/:channelName(ChannelByNameRequest) returns (Channel)
+	
+	@doc(
+		summary: 更新渠道
+	)
+	@handler channelUpdate
+	put /v0/channels/:channelName(ChannelUpdateRequest)
+	
+	@doc(
+		summary: 删除渠道
+	)
+	@handler channelDelete
+	delete /v0/channels/:channelName(ChannelByNameRequest)
 	
 	@doc(
 		summary: 创建通知

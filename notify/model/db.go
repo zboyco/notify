@@ -13,6 +13,7 @@ type BaseModel struct {
 
 func Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
+		&Channel{},
 		&Notify{},
 		&NotifyLog{},
 	)
