@@ -9,6 +9,7 @@ require (
 	github.com/zeromicro/go-zero v1.4.0
 	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.23.8
+	gorm.io/plugin/soft_delete v1.2.0
 )
 
 require (

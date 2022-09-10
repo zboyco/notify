@@ -3,18 +3,20 @@ package model
 import (
 	"github.com/zboyco/notify/utils"
 	"gorm.io/gorm"
+	"gorm.io/plugin/soft_delete"
 )
 
 type Channel struct {
 	BaseModel
+	DeletedAt soft_delete.DeletedAt `gorm:"not null;index:idx_name_deleted_at,unique"`
 
-	Name         string `gorm:"not null;uniqueIndex;default:''"` // 渠道名称
-	Sender       string `gorm:"not null;default:''"`             // 发送者
-	WechatUserID string `gorm:"not null;index;default:''"`       // 微信用户ID
-	Topic        string `gorm:"not null;index;default:''"`       // 主题
-	SubscribeURL string `gorm:"not null;default:''"`             // 订阅地址
-	SubscribeQr  string `gorm:"not null;default:''"`             // 订阅二维码
-	Remark       string `gorm:"not null;default:''"`             // 备注
+	Name         string `gorm:"not null;index:idx_name_deleted_at,unique;default:''"` // 渠道名称
+	Sender       string `gorm:"not null;default:''"`                                  // 发送者
+	WechatUserID string `gorm:"not null;index;default:''"`                            // 微信用户ID
+	Topic        string `gorm:"not null;index;default:''"`                            // 主题
+	SubscribeURL string `gorm:"not null;default:''"`                                  // 订阅地址
+	SubscribeQr  string `gorm:"not null;default:''"`                                  // 订阅二维码
+	Remark       string `gorm:"not null;default:''"`                                  // 备注
 }
 
 // 通过ID获取
@@ -24,7 +26,7 @@ func (t *Channel) FetchByID(db *gorm.DB) error {
 
 // 通过名称获取
 func (t *Channel) FetchByName(db *gorm.DB) error {
-	return db.First(t).Error
+	return db.Where(t, "Name").First(t).Error
 }
 
 // 统计
