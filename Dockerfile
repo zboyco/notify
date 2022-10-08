@@ -5,7 +5,7 @@ COPY ./ ./
 RUN cd notify && go build -v .
 
 # runtime
-FROM alpine
+FROM scratch
 COPY --from=builder /usr/src/app/notify/notify /go/bin/notify
 EXPOSE 80
 WORKDIR /go/bin
