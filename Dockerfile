@@ -5,7 +5,7 @@ COPY ./ ./
 RUN cd notify && go build -v .
 
 # runtime
-FROM scratch
+FROM gcr.io/distroless/static
 COPY --from=builder /usr/src/app/notify/notify /app
 EXPOSE 80
 CMD ["/app"]
