@@ -5,7 +5,7 @@ COPY ./ ./
 RUN cd notify && go build -v .
 
 # runtime
-FROM gcr.io/distroless/static
-COPY --from=builder /usr/src/app/notify/notify /
+FROM gcr.io/distroless/static-debian10:debug
+COPY --from=builder /usr/src/app/notify/notify /app
 EXPOSE 80
-CMD ["/notify"]
+CMD ["/app"]
