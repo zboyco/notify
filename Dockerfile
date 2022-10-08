@@ -9,4 +9,4 @@ FROM scratch
 COPY --from=builder /usr/src/app/notify/notify /go/bin/notify
 EXPOSE 80
 WORKDIR /go/bin
-ENTRYPOINT ["./notify"]
+CMD ["/go/bin/notify"]
