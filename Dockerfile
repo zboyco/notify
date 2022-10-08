@@ -6,7 +6,6 @@ RUN cd notify && go build -v .
 
 # runtime
 FROM scratch
-COPY --from=builder /usr/src/app/notify/notify /go/bin/notify
+COPY --from=builder /usr/src/app/notify/notify /app
 EXPOSE 80
-WORKDIR /go/bin
-CMD ["/go/bin/notify"]
+CMD ["/app"]
