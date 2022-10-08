@@ -9,4 +9,4 @@ FROM alpine
 COPY --from=builder /usr/src/app/notify/notify /go/bin/notify
 EXPOSE 80
 WORKDIR /go/bin
-ENTRYPOINT ["/go/bin/notify"]
+ENTRYPOINT ["./notify"]
