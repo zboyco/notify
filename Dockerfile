@@ -7,7 +7,7 @@ RUN cd notify && CGO_ENABLED=0 go build -v -ldflags '-w -s' .
 # upx
 FROM ghcr.io/zboyco/upx:alpine AS upx
 COPY --from=builder /usr/src/app/notify/notify /app
-RUN upx --ultra-brute /app
+RUN upx --best /app
 
 # runtime
 FROM gcr.io/distroless/static

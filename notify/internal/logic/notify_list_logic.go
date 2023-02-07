@@ -29,18 +29,20 @@ func (l *NotifyListLogic) NotifyList(req *types.NotifyListRequest) (resp *types.
 	// todo: add your logic here and delete this line
 	// 查询notify list
 	notify := &model.Notify{}
+	zeroFields := []interface{}{}
 	if req.Completed != nil {
 		notify.Completed = *req.Completed
+		zeroFields = append(zeroFields, "Completed")
 	}
 	notifyList, err := notify.List(l.svcCtx.DB, utils.Pager{
 		Limit:  req.Limit,
 		Offset: req.Offset,
-	}, "ID DESC", "Completed")
+	}, "ID DESC", zeroFields...)
 	if err != nil {
 		return nil, err
 	}
 	// 查询notify count
-	count, err := notify.Count(l.svcCtx.DB, "Completed")
+	count, err := notify.Count(l.svcCtx.DB, zeroFields...)
 	if err != nil {
 		return nil, err
 	}
