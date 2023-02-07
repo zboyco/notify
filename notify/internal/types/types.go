@@ -62,6 +62,7 @@ type NotifyCreateRequest struct {
 type NotifyListRequest struct {
 	Auth
 	Pager
+	Completed bool `json:"completed"` // 状态
 }
 
 type NotifyByIDRequest struct {

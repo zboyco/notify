@@ -28,11 +28,13 @@ func NewNotifyListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Notify
 func (l *NotifyListLogic) NotifyList(req *types.NotifyListRequest) (resp *types.NotifyListResponse, err error) {
 	// todo: add your logic here and delete this line
 	// 查询notify list
-	notify := &model.Notify{}
+	notify := &model.Notify{
+		Completed: req.Completed,
+	}
 	notifyList, err := notify.List(l.svcCtx.DB, utils.Pager{
 		Limit:  req.Limit,
 		Offset: req.Offset,
-	})
+	}, "ID DESC", "Completed")
 	if err != nil {
 		return nil, err
 	}

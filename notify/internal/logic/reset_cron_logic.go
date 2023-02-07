@@ -35,7 +35,7 @@ func (l *ResetCronLogic) ResetCron(req *types.Auth) error {
 		notifyModel := &model.Notify{
 			Completed: false,
 		}
-		notifies, err := notifyModel.List(l.svcCtx.DB, utils.Pager{Limit: -1}, "Completed")
+		notifies, err := notifyModel.List(l.svcCtx.DB, utils.Pager{Limit: -1}, "ID", "Completed")
 		if err != nil {
 			logr.Errorf("init list notifies error: %v", err)
 			return

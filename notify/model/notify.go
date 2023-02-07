@@ -36,9 +36,9 @@ func (t *Notify) Count(db *gorm.DB) (int64, error) {
 }
 
 // 列表
-func (t *Notify) List(db *gorm.DB, pager utils.Pager, zeroFields ...interface{}) ([]Notify, error) {
+func (t *Notify) List(db *gorm.DB, pager utils.Pager, orderFields interface{}, zeroFields ...interface{}) ([]Notify, error) {
 	var notifies []Notify
-	err := db.Where(t, zeroFields...).Limit(pager.Limit).Offset(pager.Offset).Find(&notifies).Error
+	err := db.Where(t, zeroFields...).Order(orderFields).Limit(pager.Limit).Offset(pager.Offset).Find(&notifies).Error
 	if err != nil {
 		return nil, err
 	}

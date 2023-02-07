@@ -59,6 +59,7 @@ type (
 	NotifyListRequest {
 		Auth
 		Pager
+		Completed bool `json:"completed"` // 状态
 	}
 
 	NotifyByIDRequest {
