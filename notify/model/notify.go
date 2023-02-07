@@ -26,9 +26,9 @@ func (t *Notify) FetchByID(db *gorm.DB) error {
 }
 
 // 统计
-func (t *Notify) Count(db *gorm.DB) (int64, error) {
+func (t *Notify) Count(db *gorm.DB, zeroFields ...interface{}) (int64, error) {
 	var count int64
-	err := db.Model(t).Where(t).Count(&count).Error
+	err := db.Model(t).Where(t, zeroFields...).Count(&count).Error
 	if err != nil {
 		return 0, err
 	}
