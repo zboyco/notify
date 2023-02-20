@@ -60,7 +60,7 @@ func (n *NotifyJob) Run() {
 		return
 	}
 	// 判断是否已经发送完成
-	if n.data.MaxNotifyCount != 0 && n.data.NotifyCount >= n.data.MaxNotifyCount {
+	if n.data.MaxNotifyCount != -1 && n.data.NotifyCount >= n.data.MaxNotifyCount {
 		logr.Infof("NotifyJob: [%d] has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
 		// 完成Job
 		n.Complete()
@@ -92,7 +92,7 @@ func (n *NotifyJob) Run() {
 	_ = n.done(n.data, err)
 
 	// 判断是否已经发送完成
-	if n.data.MaxNotifyCount != 0 && n.data.NotifyCount >= n.data.MaxNotifyCount {
+	if n.data.MaxNotifyCount != -1 && n.data.NotifyCount >= n.data.MaxNotifyCount {
 		logr.Infof("NotifyJob: [%d] has been sent, max[%d], current[%d]", n.data.ID, n.data.MaxNotifyCount, n.data.NotifyCount)
 		// 完成Job
 		n.Complete()

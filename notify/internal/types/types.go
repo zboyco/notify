@@ -77,16 +77,16 @@ type NotifyListResponse struct {
 
 type Notify struct {
 	BaseModel
-	ChannelID      uint   `json:"channelID,optional"`                  // 渠道ID
-	Title          string `json:"title"`                               // 标题
-	Content        string `json:"content,optional"`                    // 内容
-	MaxNotifyCount int    `json:"maxNotifyCount,range=[0:],default=1"` // 最大通知次数，0为不限制
-	NotifyCount    int    `json:"notifyCoun,optional"`                 // 已通知次数
-	StartAt        int    `json:"startAt"`                             // 开始时间
-	EndAt          int    `json:"endAt,optional"`                      // 结束时间
-	Spec           string `json:"spec,optional"`                       // Cron表达式（循环有效）
-	LastNotifyAt   int    `json:"lastNotifyAt,optional"`               // 最后通知时间
-	Completed      bool   `json:"completed,optional,default=false"`    // 完成标识
+	ChannelID      uint   `json:"channelID,optional"`                   // 渠道ID
+	Title          string `json:"title"`                                // 标题
+	Content        string `json:"content,optional"`                     // 内容
+	MaxNotifyCount int    `json:"maxNotifyCount,range=[-1:],default=1"` // 最大通知次数，-1为不限制
+	NotifyCount    int    `json:"notifyCount,optional"`                 // 已通知次数
+	StartAt        int    `json:"startAt"`                              // 开始时间
+	EndAt          int    `json:"endAt,optional"`                       // 结束时间
+	Spec           string `json:"spec,optional"`                        // Cron表达式（循环有效）
+	LastNotifyAt   int    `json:"lastNotifyAt,optional"`                // 最后通知时间
+	Completed      bool   `json:"completed,optional,default=false"`     // 完成标识
 }
 
 type BaseModel struct {

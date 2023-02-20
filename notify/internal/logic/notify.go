@@ -18,7 +18,7 @@ func AddNotifyToCron(ctx context.Context, svcCtx *svc.ServiceContext, notifyData
 	logr := logx.WithContext(ctx)
 	go func() {
 		// 如果已通知次数已达最大通知次数，则跳过
-		if notifyData.MaxNotifyCount != 0 && notifyData.NotifyCount >= notifyData.MaxNotifyCount {
+		if notifyData.MaxNotifyCount != -1 && notifyData.NotifyCount >= notifyData.MaxNotifyCount {
 			logr.Infof("notify %d max notify count reached", notifyData.ID)
 			// 标识完成任务
 			completeJobFunc(ctx, svcCtx)(notifyData)

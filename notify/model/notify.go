@@ -11,7 +11,7 @@ type Notify struct {
 	ChannelID      uint   `gorm:"not null;index"`               // 通知渠道
 	Title          string `gorm:"not null;default:''"`          // 标题
 	Content        string `gorm:"not null;default:''"`          // 内容
-	MaxNotifyCount int    `gorm:"not null;default:1"`           // 最大通知次数，0为不限制
+	MaxNotifyCount int    `gorm:"not null;default:1"`           // 最大通知次数，-1为不限制
 	NotifyCount    int    `gorm:"not null;default:0"`           // 已通知次数
 	StartAt        int    `gorm:"not null;default:0"`           // 开始时间
 	EndAt          int    `gorm:"not null;default:0"`           // 结束时间
