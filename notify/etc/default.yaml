@@ -7,3 +7,5 @@ Auth:
   Token: ""
 Wxpusher:
   AppToken: ""
+Cors:
+  AllowOrigins: []
