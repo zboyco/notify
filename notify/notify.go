@@ -39,7 +39,12 @@ func main() {
 	}
 
 	// 初始化
-	server := rest.MustNewServer(c.RestConf, rest.WithCors("http://localhost:3000"))
+	var server *rest.Server
+	if len(c.Cors.AllowOrigins) > 0 {
+		server = rest.MustNewServer(c.RestConf, rest.WithCors(c.Cors.AllowOrigins...))
+	} else {
+		server = rest.MustNewServer(c.RestConf)
+	}
 	defer server.Stop()
 
 	ctx := svc.NewServiceContext(c)
